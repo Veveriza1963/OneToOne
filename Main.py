@@ -1,6 +1,5 @@
 import PySimpleGUI as Sg
-import mariadb_sqlbuilder as SqlBuild
-from PySimpleGUI import Window
+import Database as Db
 
 Sg.theme("DarkAmber")
 
@@ -18,25 +17,7 @@ Layout = [
     [Sg.StatusBar("          Application Started          ", k="-Sb-", justification="center")]
 ]
 
-Window: Window = Sg.Window("OneToOne", Layout)
-
-
-# Connette al database
-def Connect(Host, Port, User, Pw):
-    Port1: int = int(Port)
-    Connection = SqlBuild.Connect(Host, User, Pw, "OneToOne", Port1)
-    if Connection is not None:
-        Sg.Popup(f"Connected To Host: {Host}")
-        Window["-Sb-"].update(f"Connesso a Database {Host}")
-        Window["-Tab-"].update(disabled=False)
-    else:
-        Sg.PopupError("Errore Connessione Database", title="Errore")
-
-
-# Visualizza Dati Tabella
-def GetDatiTabella(Tabella):
-    Rows = Connection.table(Tabella).select("*").fetchall()
-    print(Rows)
+Window = Sg.Window("OneToOne", Layout)
 
 
 # Main Loop Application
@@ -47,11 +28,19 @@ while True:
         break
     # Pulsante Connette al Database
     if Event == "-Connect-":
-        Connect(Window["-Host-"].get(), Window["-Port-"].get(),
-                Window["-User-"].get(), Window["-Pw-"].get())
+        Host = Window["-Host-"].get()
+        Result = Db.Database.Connette(Db.Database, Host=Host, Port=Window["-Port-"].get(),
+                                      User=Window["-User-"].get(), Pw=Window["-Pw-"].get())
+        if Result:
+            Sg.Popup(f"Connected To Host: {Host}")
+            Window["-Sb-"].update(f"Connesso a Database {Host}")
+            Window["-Tab-"].update(disabled=False)
+        else:
+            Sg.PopupError("Errore Connessione Database", title="Errore")
 
-    # Scelta Tabella
+    # Carica Dati da tabella
     if Event == "-Tab-":
-        GetDatiTabella(Window["-Tab-"].get())
+        Rows = Db.Database.GetDatiTabella(Db.Database, Window["-Tab-"].get())
+        print(Rows)
 
 Window.close()
