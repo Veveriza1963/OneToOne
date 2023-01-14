@@ -15,7 +15,7 @@ class Database:
         else:
             return False
 
-    # Carica la Tabella
+    # Visualizza Tutta la Tabella
     @staticmethod
     def GetDatiTabella(self, Tabella):
         Rows = self.Connessione.table(Tabella).select("*").fetchall()
